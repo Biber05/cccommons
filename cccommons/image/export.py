@@ -99,4 +99,32 @@ def plot_channels(img: np.ndarray, hsv: bool = False):
     show_img(np.concatenate((h, s, v), axis=0), "channels")
 
 
-__all__ = ["write_img", "show_img", "plot_hist", "hist2d", "plot_channels"]
+def create_stream_from_folder(folder: str, ext: str = "tiff", fps=30):
+    import os
+
+    cap = cv2.VideoCapture(os.path.join(folder, "%1d.{}".format(ext)))
+    fourcc = cv2.VideoWriter_fourcc("M", "J", "P", "G")
+    out = cv2.VideoWriter(
+        os.path.join(folder, "converted.avi"), fourcc, fps, (640, 360)
+    )
+
+    while True:
+        ret, frame = cap.read()
+        if ret:
+            out.write(frame)
+        else:
+            break
+    cap.release()
+    out.release()
+
+    return os.path.join(folder, "converted.avi")
+
+
+__all__ = [
+    "write_img",
+    "show_img",
+    "plot_hist",
+    "hist2d",
+    "plot_channels",
+    "create_stream_from_folder",
+]

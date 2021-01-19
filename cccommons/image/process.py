@@ -112,6 +112,76 @@ def to_hsv(img: np.ndarray) -> np.ndarray:
     return cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
 
+def split(img: np.ndarray) -> [np.ndarray]:
+    """
+    Splits image into his channels
+
+    Args:
+        img: image as numpy array
+
+    Returns:
+        [R, G, B]
+    """
+    if not is_colored(img):
+        raise BaseException("Should be a colored image. Got grayscale instead.")
+
+    b, g, r = cv2.split(img)
+    return [r, g, b]
+
+
+def color_range(img: np.ndarray, lower, upper) -> np.ndarray:
+    """
+    generally a binary image with two thresholds of BGR
+
+    Args:
+        img: image as numpy array
+        lower: tuple of BGR colors as lower bound
+        upper: tuple of BGR colors as upper bound
+
+    Returns:
+        img: image as numpy array
+    """
+    return cv2.inRange(img, lower, upper)
+
+
+def equalize(img: np.ndarray) -> np.ndarray:
+    """
+
+    Args:
+        img: image as numpy array
+
+    Returns:
+        image
+    """
+    if is_colored(img):
+        equ_b = cv2.equalizeHist(get_color(img, "b"))
+        equ_g = cv2.equalizeHist(get_color(img, "g"))
+        equ_r = cv2.equalizeHist(get_color(img, "r"))
+        return cv2.merge((equ_b, equ_g, equ_r))
+    else:
+        return cv2.equalizeHist(img)
+
+
+def get_color(img: np.ndarray, color: str) -> np.ndarray:
+    """
+
+    Args:
+        img: image as numpy array
+        color: r g or b as string value
+
+    Returns:
+        image with one channel
+    """
+    if color == "r":
+        return img[:, :, 0]
+    elif color == "g":
+        return img[:, :, 1]
+    elif color == "b":
+        return img[:, :, 2]
+    else:
+        raise ValueError("Wrong color - use 'r' 'g' or 'b'")
+
+
 def to_bgr(img: np.ndarray) -> np.ndarray:
     if is_colored(img):
         return img
@@ -239,76 +309,6 @@ def canny(img: np.ndarray, thresh_1=50, thresh_2=150, aperture_size=3) -> np.nda
     gray = to_gray(img)
     img = np.uint8(gray)
     return cv2.Canny(img, thresh_1, thresh_2, apertureSize=aperture_size)
-
-
-def split(img: np.ndarray) -> [np.ndarray]:
-    """
-    Splits image into his channels
-
-    Args:
-        img: image as numpy array
-
-    Returns:
-        [R, G, B]
-    """
-    if not is_colored(img):
-        raise BaseException("Should be a colored image. Got grayscale instead.")
-
-    b, g, r = cv2.split(img)
-    return [r, g, b]
-
-
-def color_range(img: np.ndarray, lower, upper) -> np.ndarray:
-    """
-    generally a binary image with two thresholds of BGR
-
-    Args:
-        img: image as numpy array
-        lower: tuple of BGR colors as lower bound
-        upper: tuple of BGR colors as upper bound
-
-    Returns:
-        img: image as numpy array
-    """
-    return cv2.inRange(img, lower, upper)
-
-
-def equalize(img: np.ndarray) -> np.ndarray:
-    """
-
-    Args:
-        img: image as numpy array
-
-    Returns:
-        image
-    """
-    if is_colored(img):
-        equ_b = cv2.equalizeHist(get_color(img, "b"))
-        equ_g = cv2.equalizeHist(get_color(img, "g"))
-        equ_r = cv2.equalizeHist(get_color(img, "r"))
-        return cv2.merge((equ_b, equ_g, equ_r))
-    else:
-        return cv2.equalizeHist(img)
-
-
-def get_color(img: np.ndarray, color: str) -> np.ndarray:
-    """
-
-    Args:
-        img: image as numpy array
-        color: r g or b as string value
-
-    Returns:
-        image with one channel
-    """
-    if color == "r":
-        return img[:, :, 0]
-    elif color == "g":
-        return img[:, :, 1]
-    elif color == "b":
-        return img[:, :, 2]
-    else:
-        raise ValueError("Wrong color - use 'r' 'g' or 'b'")
 
 
 def gamma(img: np.ndarray, gamma_value=1.0):
@@ -456,6 +456,20 @@ def create_mask_from_rect(rect: tuple) -> np.ndarray:
     return invert_image(mask)
 
 
+def diff(img1: np.ndarray, img2: np.ndarray) -> np.ndarray:
+    """
+    difference between two images to detect changes over time
+
+    Args:
+        img1: image as numpy array
+        img2: image as numpy array
+
+    Returns:
+        combined image
+    """
+    return cv2.absdiff(img1, img2)
+
+
 def find_contours(img: np.ndarray):
     """
     find contours of given image
@@ -577,6 +591,298 @@ def write_text(
                 line_type,
             )
     return img
+
+
+def hough(
+    img: np.ndarray,
+    min_line_length=100,
+    max_line_gap=10,
+    source: np.ndarray = None,
+    draw=True,
+) -> np.ndarray:
+    edges = canny(img)
+    lines = cv2.HoughLinesP(
+        edges,
+        1,
+        np.pi / 180,
+        100,
+        minLineLength=min_line_length,
+        maxLineGap=max_line_gap,
+    )
+    if lines is not None:
+        if draw:
+            if source is not None:
+                source = draw_lines(source, lines)
+            else:
+                img = draw_lines(img, lines)
+    return img if source is None else source
+
+
+def hough_lines(img: np.ndarray, min_line_length=100, max_line_gap=10) -> list:
+    """
+    Detect lines using hough transformation
+
+    Args:
+        img: image as numpy array
+        min_line_length: minimal length of detected line
+        max_line_gap: max gap between lines segments to treat them as single line
+
+    Returns:
+        list of lines
+    """
+    edges = canny(img)
+    result = cv2.HoughLinesP(
+        edges,
+        1,
+        np.pi / 180,
+        100,
+        minLineLength=min_line_length,
+        maxLineGap=max_line_gap,
+    )
+    return result if result is not None else []
+
+
+def angle(p1, height: int) -> int:
+    import math
+
+    p2 = (0, height)
+    p1 = (p1[1] - p1[3], p1[0] - p1[2])
+
+    def dot_product(v1, v2):
+        return sum((a * b) for a, b in zip(v1, v2))
+
+    def length(v):
+        return math.sqrt(dot_product(v, v))
+
+    return int(np.rad2deg(math.acos(dot_product(p1, p2) / (length(p1) * length(p2)))))
+
+
+def draw_lines(img: np.ndarray, lines: list):
+    """
+    Draw lines on image
+    Args:
+        img: image as numpy array
+        lines: list of line coords
+
+    Returns:
+        image
+    """
+    height = img.shape[0]
+    if lines is not None:
+        for line in lines:
+            a = angle(line, height)
+            if 60 < a < 160:
+                x1, y1, x2, y2 = line
+                cv2.line(img, (x1, y1), (x2, y2), (0, 255, 0), 3)
+                # norm_x, norm_y = x2 - x1, y2 - y1
+                # cv2.line(img, (0, 0), (norm_x, norm_y), (0, 0, 255), 2)
+    return img
+
+
+def match_template(img: np.ndarray, template, threshold=0.5) -> np.ndarray:
+    """
+    finds a template in a picture using matchTemplate.
+    does not work for rotated or scaled versions of the template
+
+    Args:
+        img and template in grayscale
+
+    Returns:
+        img including found match
+    """
+    w, h = template.shape[::-1]
+    res = cv2.matchTemplate(img, template, cv2.TM_CCOEFF_NORMED)
+    loc = np.where(res >= threshold)
+    for pt in zip(*loc[::-1]):
+        cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0, 255, 255), 1)
+    return img
+
+
+def raster(img: np.ndarray, cols: int, rows: int) -> [np.ndarray]:
+    """
+    Create a raster of an image and returns a list of ROI
+
+    Args:
+        img: image as numpy array
+        cols: number of columns
+        rows: number of rows
+
+    Returns:
+
+    """
+    img_list = []
+
+    h, w, _ = img.shape
+
+    w_step = int(w / cols)
+    h_step = int(h / rows)
+
+    for c in range(0, cols):
+        for r in range(0, rows):
+            img_list.append(
+                img[r * h_step : (r + 1) * h_step, c * w_step : (c + 1) * w_step]
+            )
+    return img_list
+
+
+def sliding_window(
+    img: np.ndarray, size: tuple = (32, 32), step_size: tuple = (16, 16)
+):
+    """
+    Sliding window of a image for given kernel and step size
+
+    Args:
+        img: image as numpy array
+        size: size of kernel as tuple - should be (2^x, 2^y)
+        step_size: moving of windows as tuple for x and y direction - should be (2^n, 2^m)
+
+    Returns:
+        Iterator returning x, y and image
+    """
+    for y in range(0, img.shape[0], step_size[1]):
+        for x in range(0, img.shape[1], step_size[0]):
+            # yield the current window
+            yield x, y, img[y : y + size[1], x : x + size[0]]
+
+
+def draw_points(
+    img: np.ndarray, points: list, color: tuple = (255, 0, 0)
+) -> np.ndarray:
+    """
+    Draws points from a list of coordinates
+
+    Args:
+        img: image as numpy array
+        points: list of tuples (x,y)
+        color: BGR color triple
+
+    Returns:
+        return image including drawn points
+    """
+    points = np.array(points, dtype=np.uint8)
+
+    for i in points:
+        x, y = i.ravel()
+        cv2.circle(img, (x, y), radius=3, color=color, thickness=-1)
+
+    return img
+
+
+def optical_flow(img: np.ndarray, previous: np.ndarray) -> np.ndarray:
+    mask = np.zeros(shape=img.shape, dtype=np.uint8)
+    mask[..., 1] = 255
+
+    gray = to_gray(img)
+    previous = to_gray(previous)
+
+    flow = cv2.calcOpticalFlowFarneback(previous, gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+
+    magnitude, polar_angle = cv2.cartToPolar(flow[..., 0], flow[..., 1])
+    mask[..., 0] = polar_angle * 180 / np.pi / 2
+    mask[..., 2] = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX)
+    rgb = cv2.cvtColor(mask, cv2.COLOR_HSV2BGR)
+    return rgb
+
+
+def gradient_diff(img: np.ndarray, previous: np.ndarray) -> np.ndarray:
+    """
+    Gradient using difference image
+    Args:
+        img: image as numpy array at time t0
+        previous: image as numpy array at time t-1
+
+    Returns:
+        gradient diff image
+    """
+    diff_img = diff(img, previous)
+    return gradient(diff_img)
+
+
+def gradient(img: np.ndarray, kernel_size: int = 3) -> np.ndarray:
+    """
+    calculates the magnitude and polar_angle of 2D vectors using Sobel operator on both axis.
+    Args:
+        img: image as numpy array
+        kernel_size: kernel size of Sobel operator (NxN)
+
+    Returns:
+        magnitude of gradients in image shape
+    """
+    img = np.float32(img) / 255.0
+
+    sy = sobel_y(img, kernel_size=kernel_size)
+    sx = sobel_x(img, kernel_size=kernel_size)
+
+    mag, polar_angle = cv2.cartToPolar(sx, sy, angleInDegrees=True)
+
+    mag = np.ndarray.astype(mag, dtype=np.float32)
+    mag = to_bgr(mag)
+
+    return mag
+
+
+def get_bounding_rect_from_contour(contour) -> tuple:
+    """
+    creates a tuple including position and dimension of a contour
+
+    Args:
+        contour
+
+    Returns:
+        :return tuple of position and dimension
+    """
+    x, y, w, h = cv2.boundingRect(contour)
+    return (x, y), (w, h)
+
+
+def calc_moments(contours, min_value=0, max_value=640) -> []:
+    """
+    moment: weighted average of pixel intensity
+
+    Args:
+        contours: list of contours
+        min_value: minimum area of contour
+        max_value: maximum area of contour
+
+    Returns:
+        :return list of moments from contours
+    """
+    M = []
+    for c in contours:
+        if min_value <= cv2.contourArea(c) <= max_value:
+            M.append(cv2.moments(c))
+    return M
+
+
+def centroids(moments: []) -> []:
+    """
+     calc centroids of moments
+
+    Args:
+        moments list of moments
+
+    Returns:
+        list of centroids
+    """
+    C = []
+    for m in moments:
+        C.append(calc_centroid(m))
+    return C
+
+
+def calc_centroid(moment) -> tuple:
+    """
+    physical center of given area
+
+    Args:
+        moment
+
+    Returns:
+        tuple of x and y coordinates (x,y)
+    """
+    cx = int(moment["m10"] / moment["m00"])
+    cy = int(moment["m01"] / moment["m00"])
+    return cx, cy
 
 
 __all__ = [

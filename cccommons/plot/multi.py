@@ -8,8 +8,8 @@ from cccommons.plot.plotter import Plotter
 class MultiPlot(Plotter):
     """"""
 
-    def __init__(self, data: pd.DataFrame, suffix: str = None):
-        super().__init__(data, suffix)
+    def __init__(self, data: pd.DataFrame, plot_dir: str, suffix: str = None):
+        super().__init__(data, plot_dir, suffix)
 
     def hist(self, split, x):
         """

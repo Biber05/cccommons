@@ -6,8 +6,8 @@ from cccommons.plot.plotter import Plotter
 
 
 class PairPlot(Plotter):
-    def __init__(self, data: pd.DataFrame):
-        super().__init__(data)
+    def __init__(self, data: pd.DataFrame, plot_dir: str, suffix: str = None):
+        super().__init__(data, plot_dir, suffix)
 
     def scatter(self, x, y, z):
         """
