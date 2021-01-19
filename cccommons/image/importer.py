@@ -246,7 +246,9 @@ def run_plot_in_video(func: Callable, path: str, capture_previous: bool = False)
     import pandas as pd
     from cccommons.plot.uni import Plot
 
-    pl = Plot(pd.DataFrame(data), prefix=path.split("/")[-1].split(".")[0])
+    pl = Plot(
+        pd.DataFrame(data), suffix=path.split("/")[-1].split(".")[0], plot_dir=path
+    )
     pl.hist2d_line(x=0, y=1)
 
 
