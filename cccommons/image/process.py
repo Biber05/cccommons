@@ -921,4 +921,11 @@ __all__ = [
     "find_and_draw_contours",
     "draw_rect",
     "write_text",
+    "sliding_window",
+    "gradient",
+    "angle",
+    "diff",
+    "calc_centroid",
+    "centroids",
+    "optical_flow",
 ]
