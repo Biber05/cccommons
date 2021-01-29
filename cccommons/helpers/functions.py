@@ -1,9 +1,5 @@
 import functools
 import time
-from typing import Union
-
-import numpy as np
-import pandas as pd
 
 
 def product(lists: [list]) -> list:
@@ -18,21 +14,6 @@ def product(lists: [list]) -> list:
     import itertools
 
     return list(itertools.product(*lists))
-
-
-def log(data: Union[list, dict, np.ndarray]):
-    if isinstance(data, list):
-        [print(x) for x in data]
-    elif isinstance(data, dict):
-        for k, v in data.items():
-            print("{} : {}".format(k, v))
-    else:
-        with np.printoptions(precision=3, suppress=True):
-            print(data)
-
-
-def str_to_int(string: str) -> int:
-    return int(float(string))
 
 
 def timer(func):
@@ -67,43 +48,6 @@ def expand_grid(dictionary: dict) -> list:
     from itertools import product
 
     return [row for row in product(*dictionary.values())]
-
-
-def json_to_df(json) -> pd.DataFrame:
-    """
-
-    Args:
-        json:
-
-    Returns:
-        object: Pandas DataFrame
-
-    """
-    return pd.read_json(json)
-
-
-def dict_to_df(dictionary: dict) -> pd.DataFrame:
-    """
-
-    Args:
-        dictionary:
-
-    Returns:
-
-    """
-    return pd.DataFrame.from_dict(data=dictionary, orient="index").fillna(0)
-
-
-def list_to_df(array: [list]) -> pd.DataFrame:
-    """
-
-    Args:
-        array: list of lists
-
-    Returns:
-        pandas DataFrame
-    """
-    return pd.DataFrame(array).fillna(0)
 
 
 def name(func: str, param) -> str:

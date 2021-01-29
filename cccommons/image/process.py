@@ -38,7 +38,7 @@ def crop(img: np.ndarray, contour) -> np.ndarray:
          img
     """
     x, y, w, h = cv2.boundingRect(contour)
-    return img[y : y + h, x : x + w]
+    return img[y: y + h, x: x + w]
 
 
 def crop_with_mask(img: np.ndarray, mask: np.ndarray) -> np.ndarray:
@@ -68,7 +68,7 @@ def crop_with_rect(img: np.ndarray, rect) -> np.ndarray:
     """
     x, y, w, h = rect
     x, y, w, h = int(x), int(y), int(w), int(h)
-    return img[y : y + h, x : x + w]
+    return img[y: y + h, x: x + w]
 
 
 def is_colored(img: np.ndarray) -> bool:
@@ -213,11 +213,11 @@ def mean_pixel(img: np.ndarray) -> Union[tuple, np.ndarray]:
 
 
 def thresh(
-    img: np.ndarray,
-    threshold=127,
-    max_value=255,
-    kernel_size=3,
-    thresh_type=cv2.THRESH_BINARY_INV,
+        img: np.ndarray,
+        threshold=127,
+        max_value=255,
+        kernel_size=3,
+        thresh_type=cv2.THRESH_BINARY_INV,
 ) -> np.ndarray:
     """
     creates a binary image for given threshold value in range 0-255
@@ -516,7 +516,7 @@ def find_and_draw_contours(img: np.ndarray) -> np.ndarray:
 
 
 def draw_rect(
-    img: np.ndarray, dimensions: tuple, color: tuple = (255, 255, 255)
+        img: np.ndarray, dimensions: tuple, color: tuple = (255, 255, 255)
 ) -> np.ndarray:
     """
     draw rectangle of position and size
@@ -560,7 +560,7 @@ def filter_contours(contours, min_size=0, max_size=500) -> []:
 
 
 def write_text(
-    img: np.ndarray, text: Union[list, str, dict], position: tuple = (10, 30)
+        img: np.ndarray, text: Union[list, str, dict], position: tuple = (10, 30)
 ) -> np.ndarray:
     font = cv2.FONT_HERSHEY_COMPLEX
     color = (0, 255, 0)
@@ -594,11 +594,11 @@ def write_text(
 
 
 def hough(
-    img: np.ndarray,
-    min_line_length=100,
-    max_line_gap=10,
-    source: np.ndarray = None,
-    draw=True,
+        img: np.ndarray,
+        min_line_length=100,
+        max_line_gap=10,
+        source: np.ndarray = None,
+        draw=True,
 ) -> np.ndarray:
     edges = canny(img)
     lines = cv2.HoughLinesP(
@@ -720,13 +720,13 @@ def raster(img: np.ndarray, cols: int, rows: int) -> [np.ndarray]:
     for c in range(0, cols):
         for r in range(0, rows):
             img_list.append(
-                img[r * h_step : (r + 1) * h_step, c * w_step : (c + 1) * w_step]
+                img[r * h_step: (r + 1) * h_step, c * w_step: (c + 1) * w_step]
             )
     return img_list
 
 
 def sliding_window(
-    img: np.ndarray, size: tuple = (32, 32), step_size: tuple = (16, 16)
+        img: np.ndarray, size: tuple = (32, 32), step_size: tuple = (16, 16)
 ):
     """
     Sliding window of a image for given kernel and step size
@@ -742,11 +742,11 @@ def sliding_window(
     for y in range(0, img.shape[0], step_size[1]):
         for x in range(0, img.shape[1], step_size[0]):
             # yield the current window
-            yield x, y, img[y : y + size[1], x : x + size[0]]
+            yield x, y, img[y: y + size[1], x: x + size[0]]
 
 
 def draw_points(
-    img: np.ndarray, points: list, color: tuple = (255, 0, 0)
+        img: np.ndarray, points: list, color: tuple = (255, 0, 0)
 ) -> np.ndarray:
     """
     Draws points from a list of coordinates
